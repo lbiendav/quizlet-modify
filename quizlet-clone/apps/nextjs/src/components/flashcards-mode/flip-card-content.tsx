@@ -1,7 +1,7 @@
 "use client";
 
 import type { MouseEvent } from "react";
-import { Star } from "lucide-react";
+import { Star, Volume2 } from "lucide-react";
 
 import type { RouterOutputs } from "@acme/api";
 import type { Session } from "@acme/auth";
@@ -42,6 +42,23 @@ const FlipCardContent = ({
 
   const content = back ? flashcard.definition : flashcard.term;
 
+  // A card can have Japanese on either side. Always use that text so the
+  // pronunciation control behaves consistently after the card is flipped.
+  const japaneseText = [flashcard.term, flashcard.definition].find((text) =>
+    /[\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff]/.test(text),
+  );
+
+  const pronounceJapanese = (event: MouseEvent) => {
+    event.stopPropagation();
+
+    if (!japaneseText || typeof window === "undefined") return;
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(japaneseText);
+    utterance.lang = "ja-JP";
+    window.speechSynthesis.speak(utterance);
+  };
+
   return (
     <div
       className={cn("absolute h-full w-full [backface-visibility:hidden]", {
@@ -53,6 +70,17 @@ const FlipCardContent = ({
           <span className="select-none font-semibold">{title}</span>
           <div className="flex justify-end gap-2">
             {editable && <EditFlashcardDialog flashcard={flashcard} />}
+            <Button
+              aria-label="Phát âm tiếng Nhật"
+              className="rounded-full"
+              disabled={!japaneseText}
+              onClick={pronounceJapanese}
+              size="icon"
+              title="Phát âm tiếng Nhật"
+              variant="ghost"
+            >
+              <Volume2 size={16} />
+            </Button>
             <Button
               className="rounded-full"
               onClick={onStarClick}
