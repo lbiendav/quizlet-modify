@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Điểm Danh Mỗi Ngày 🔥</title>
+<style>
+  :root {
+    --bg1: #667eea;
+    --bg2: #764ba2;
+    --accent: #ff6b35;
+    --accent2: #f7931e;
+    --green: #22c55e;
+    --card: rgba(255,255,255,0.95);
+    --text: #1e293b;
+    --muted: #64748b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: var(--text);
+  }
+  .container {
+    width: 100%;
+    max-width: 440px;
+    background: var(--card);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+    padding: 28px;
+    animation: slideUp .6s ease;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .header { text-align: center; margin-bottom: 20px; }
+  .header h1 { font-size: 1.5rem; margin-bottom: 6px; }
+  .quote {
+    font-size: .85rem;
+    color: var(--muted);
+    font-style: italic;
+    min-height: 2.2em;
+  }
+  /* Stats */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .stat {
+    background: linear-gradient(135deg, #f8fafc, #eef2ff);
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 12px 8px;
+    text-align: center;
+    transition: transform .2s;
+  }
+  .stat:hover { transform: translateY(-3px); }
+  .stat .num { font-size: 1.5rem; font-weight: 800; }
+  .stat .num.streak { color: var(--accent); }
+  .stat .num.month { color: var(--bg1); }
+  .stat .num.best { color: var(--green); }
+  .stat .label { font-size: .7rem; color: var(--muted); margin-top: 2px; }
+  /* Check-in button */
+  .checkin-btn {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 16px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    box-shadow: 0 8px 24px rgba(255,107,53,0.4);
+    transition: all .25s;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .checkin-btn:hover:not(:disabled) { transform: scale(1.03); box-shadow: 0 12px 32px rgba(255,107,53,0.55); }
+  .checkin-btn:active:not(:disabled) { transform: scale(0.98); }
+  .checkin-btn:disabled {
+    background: linear-gradient(135deg, var(--green), #16a34a);
+    box-shadow: 0 8px 24px rgba(34,197,94,0.35);
+    cursor: default;
+  }
+  .checkin-btn.pulse { animation: pulse 2s infinite; }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 8px 24px rgba(255,107,53,0.4); }
+    50% { box-shadow: 0 8px 24px rgba(255,107,53,0.75), 0 0 0 8px rgba(255,107,53,0.12); }
+  }
+  /* Progress bar */
+  .progress-wrap { margin-bottom: 20px; }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: .78rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .progress-bar {
+    height: 10px;
+    background: #e2e8f0;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    width: 0%;
+    transition: width .8s cubic-bezier(.22,1,.36,1);
+  }
+  /* Calendar */
+  .cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .cal-header h2 { font-size: 1.05rem; }
+  .nav-btn {
+    background: #eef2ff;
+    border: none;
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    color: var(--bg1);
+    font-weight: 700;
+    transition: background .2s;
+  }
+  .nav-btn:hover { background: #e0e7ff; }
+  .weekdays, .days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+  .weekdays div {
+    text-align: center;
+    font-size: .7rem;
+    font-weight: 700;
+    color: var(--muted);
+    padding: 4px 0;
+  }
+  .day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: .85rem;
+    font-weight: 600;
+    background: #f8fafc;
+    color: var(--text);
+    position: relative;
+    transition: all .2s;
+  }
+  .day.empty { background: transparent; }
+  .day.future { color: #cbd5e1; background: #f8fafc; }
+  .day.checked {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(255,107,53,0.35);
+    animation: pop .35s ease;
+  }
+  .day.checked::after {
+    content: '🔥';
+    position: absolute;
+    font-size: .6rem;
+    bottom: 1px;
+    right: 3px;
+  }
+  @keyframes pop {
+    0% { transform: scale(0.6); }
+    60% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+  .day.today {
+    outline: 2.5px solid var(--bg1);
+    outline-offset: 2px;
+  }
+  .day.missed { color: #94a3b8; }
+  .footer {
+    text-align: center;
+    margin-top: 18px;
+    font-size: .75rem;
+    color: var(--muted);
+  }
+  .save-status {
+    text-align: center;
+    margin-top: 10px;
+    font-size: .75rem;
+    color: var(--muted);
+    cursor: pointer;
+    text-decoration: underline dotted;
+    transition: color .2s;
+  }
+  .save-status:hover { color: var(--accent); }
+  .save-status.ok { color: var(--green); cursor: default; text-decoration: none; }
+  /* Toast milestone */
+  .toast {
+    position: fixed;
+    top: 24px; left: 50%;
+    transform: translateX(-50%) translateY(-120px);
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    font-weight: 700;
+    padding: 14px 26px;
+    border-radius: 99px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+    transition: transform .5s cubic-bezier(.22,1,.36,1);
+    z-index: 100;
+    text-align: center;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  canvas#confetti {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 99;
+  }
+</style>
+<link rel="stylesheet" href="diem-danh-inferno.css">
+</head>
+<body>
+
+<div class="inferno-bg" aria-hidden="true">
+  <i class="ember-particle"></i><i class="ember-particle"></i><i class="ember-particle"></i>
+  <i class="ember-particle"></i><i class="ember-particle"></i><i class="ember-particle"></i>
+  <i class="ember-particle"></i><i class="ember-particle"></i><i class="ember-particle"></i>
+</div>
+<canvas id="confetti"></canvas>
+<div class="toast" id="toast"></div>
+
+<div class="container">
+  <div class="header">
+    <span class="eyebrow">⛓ PAIN ⛓</span>
+    <h1>Điểm Danh <span>Vượt Khổ</span></h1>
+    <div class="quote" id="quote"></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="num streak" id="streak">0</div>
+      <div class="label">🔥 Chuỗi khổ đau chán nản </div>
+    </div>
+    <div class="stat">
+      <div class="num best" id="best">0</div>
+      <div class="label">👑 Kỷ lục sống sót</div>
+    </div>
+  </div>
+
+  <button class="checkin-btn pulse" id="checkinBtn" aria-pressed="false">🔥 Bước qua ngọn lửa hôm nay</button>
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>Hành trình xuyên địa ngục</span>
+      <span id="percent">0%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="calendar-view-tools">
+    <button class="year-toggle" id="yearToggle" type="button" aria-expanded="false" aria-controls="yearDrawer">
+      <span aria-hidden="true">▦</span>
+      Xem cả năm
+    </button>
+  </div>
+
+  <div class="cal-header">
+    <button class="nav-btn" id="prevBtn">‹</button>
+    <h2 id="monthTitle"></h2>
+    <button class="nav-btn" id="nextBtn">›</button>
+  </div>
+  <div class="weekdays">
+    <div>T2</div><div>T3</div><div>T4</div><div>T5</div><div>T6</div><div>T7</div><div>CN</div>
+  </div>
+  <div class="days" id="days"></div>
+
+  <div class="footer">“Con đường này không hứa hẹn dễ dàng. Mỗi ngày xuất hiện là một lần bước qua lửa — và kẻ không bỏ cuộc sẽ rời địa ngục mạnh mẽ hơn khi bước vào.”</div>
+  <button class="save-status" id="saveStatus" type="button">📂 Bấm vào đây và chọn file diem-danh-data.js để import dữ liệu điểm danh</button>
+  <input id="dataImport" type="file" accept=".js,text/javascript,application/javascript" hidden>
+</div>
+
+<div class="year-drawer" id="yearDrawer" hidden>
+  <button class="year-drawer-backdrop" id="yearBackdrop" type="button" aria-label="Đóng lịch cả năm"></button>
+  <section class="year-sheet" role="dialog" aria-modal="true" aria-labelledby="yearTitle">
+    <header class="year-sheet-header">
+      <div>
+        <span class="year-kicker">Biên niên sử vượt khổ</span>
+        <h2 id="yearTitle">2026</h2>
+      </div>
+      <div class="year-controls">
+        <button type="button" id="yearPrev" aria-label="Năm trước">‹</button>
+        <button type="button" id="yearToday">Hôm nay</button>
+        <button type="button" id="yearNext" aria-label="Năm sau">›</button>
+        <button class="year-close" type="button" id="yearClose" aria-label="Đóng lịch cả năm">×</button>
+      </div>
+    </header>
+    <div class="year-legend" aria-label="Chú thích">
+      <span><i class="legend-mark checked-mark"></i> Đã vượt</span>
+      <span><i class="legend-mark today-mark"></i> Hôm nay</span>
+    </div>
+    <div class="year-grid" id="yearGrid"></div>
+  </section>
+</div>
+
+<aside class="note-popover" id="notePopover" role="dialog" aria-modal="false" aria-labelledby="noteTitle" hidden>
+  <div class="note-popover-head">
+    <div>
+      <span class="note-kicker">Ghi chú tương lai</span>
+      <strong id="noteTitle"></strong>
+    </div>
+    <button type="button" id="noteClose" aria-label="Đóng ghi chú">×</button>
+  </div>
+  <label class="note-label" for="noteInput">Event</label>
+  <textarea id="noteInput" maxlength="240" rows="3" placeholder="Nhập ghi chú cho ngày này..."></textarea>
+  <div class="note-actions">
+    <button class="note-delete" type="button" id="noteDelete">Xóa</button>
+    <span class="note-spacer"></span>
+    <button type="button" id="noteCancel">Hủy</button>
+    <button class="note-save" type="button" id="noteSave">Lưu ghi chú</button>
+  </div>
+</aside>
+<div class="note-tooltip" id="noteTooltip" role="tooltip" hidden></div>
+
+<script src="diem-danh-data.js"></script>
+<script>
+(function () {
+  var STORAGE_KEY = 'diem-danh-data';
+  var NOTES_KEY = 'diem-danh-notes';
+  var data = {};
+  var notes = {};
+  // 1) Đọc từ file dữ liệu riêng (diem-danh-data.js)
+  if (window.DIEM_DANH_DATA && typeof window.DIEM_DANH_DATA === 'object') {
+    Object.keys(window.DIEM_DANH_DATA).forEach(function (k) {
+      if (window.DIEM_DANH_DATA[k]) data[k] = true;
+    });
+  }
+  // 2) Gộp thêm cache trình duyệt (phòng khi lần trước chưa kịp ghi vào file)
+  try {
+    var cache = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    Object.keys(cache).forEach(function (k) { data[k] = Boolean(cache[k]); });
+  } catch (e) {}
+  try {
+    var noteCache = JSON.parse(localStorage.getItem(NOTES_KEY)) || {};
+    Object.keys(noteCache).forEach(function (key) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(key) && typeof noteCache[key] === 'string' && noteCache[key].trim()) {
+        notes[key] = noteCache[key].trim().slice(0, 240);
+      }
+    });
+  } catch (e) {}
+
+  var today = new Date();
+  var viewYear = today.getFullYear();
+  var viewMonth = today.getMonth();
+  var overviewYear = viewYear;
+
+  var QUOTES = [
+    '“IT GETS EASIER. EVERY DAY IT GETS A LITTLE EASIER. BUT YOU GOTTA DO IT EVERY DAY. THAT\'S THE HARD PART. BUT IT DOES GET EASIER.”',
+
+    '“Bình minh chỉ đẹp nhất với những ai đã đi qua trọn vẹn màn đêm.”',
+
+    '“It\'s not hard, it\'s just new.”',
+
+    '“Hãy để mỗi khi nhớ lại chuyện quá khứ ta thốt lên rằng: Òa, hồi đó điên thật, sao mình lại có thể làm được việc ấy nhỉ — thay vì tiếc rằng: Giá như mình đã làm việc ấy.”',
+
+    '“Có những ngày bạn không cần chiến thắng. Bạn chỉ cần không đầu hàng.”',
+
+    '“Đừng đợi bản thân có động lực rồi mới bắt đầu. Hãy bắt đầu, rồi chính những bước chân của bạn sẽ tạo ra động lực.”',
+
+    '“Thứ đang nghiền nát bạn hôm nay, nếu bạn không bỏ chạy, một ngày nào đó sẽ trở thành thứ khiến bạn không còn dễ bị nghiền nát nữa.”',
+
+    '“Không ai đến cứu cuộc đời bạn cả. Và đó không phải tin xấu — đó là ngày bạn nhận ra chìa khóa vẫn luôn nằm trong tay mình.”',
+
+    '“Bạn không cần trở thành một con người phi thường trong một đêm. Bạn chỉ cần mỗi ngày từ chối quay trở lại làm con người mà mình đã quyết định bỏ lại.”',
+
+    '“Mệt thì đi chậm. Đau thì nghiến răng. Sợ thì cứ run. Nhưng đừng quay đầu.”',
+
+    '“Một năm nữa sẽ trôi qua dù bạn có hành động hay không. Hãy khiến phiên bản của bạn một năm sau biết ơn vì hôm nay bạn đã bắt đầu.”',
+
+    '“Có những cánh cửa chỉ mở sau khi bạn đã gõ đến mức đôi tay rớm máu. Đừng nhầm sự im lặng của cánh cửa với lời từ chối.”',
+
+    '“Kỷ luật là cách bạn gửi một lời nhắn tới tương lai rằng: Tao chưa từng bỏ mày.”',
+
+    '“Ngày khó khăn nhất thường không phải ngày để chứng minh bạn mạnh đến đâu. Đó là ngày để chứng minh bạn thực sự muốn điều này đến mức nào.”',
+
+    '“Đừng sợ phải bắt đầu lại. Lần này bạn không bắt đầu từ con số không — bạn bắt đầu cùng tất cả những gì mình đã học được.”',
+
+    '“Có thể hôm nay chẳng ai nhìn thấy nỗ lực của bạn. Cứ làm tiếp. Núi không lớn lên trong một ngày, nhưng từng lớp đá vẫn âm thầm chồng lên nhau.”',
+
+    '“Bạn từng vượt qua những ngày mà lúc đó bạn nghĩ mình không thể vượt qua. Hôm nay cũng chỉ là một ngày như thế.”',
+
+    '“Thất bại không có quyền quyết định bạn là ai. Nó chỉ được quyền hỏi một câu: Mày còn muốn tiếp tục không?”',
+
+    '“Đừng cầu cho con đường dễ hơn. Hãy trở thành người mà con đường khó đến mấy cũng không thể bắt quay đầu.”',
+
+    '“Một ngày nào đó, những buổi sáng bạn không muốn thức dậy, những đêm bạn muốn bỏ cuộc và những lần bạn ép mình làm thêm một chút nữa sẽ cùng nhau tạo thành cuộc đời mà hôm nay bạn đang mơ tới.”',
+
+    '“Nếu phải bò thì bò. Nếu phải nghỉ thì nghỉ. Nhưng khi vẫn còn một chút sức lực, hãy dùng nó để tiến về phía trước.”',
+
+    '“Đừng để nỗi đau của vài tháng kỷ luật biến thành nỗi đau của nhiều năm tự hỏi: Nếu ngày đó mình cố thêm một chút thì sao?”',
+
+    '“Bạn không cần cả thế giới tin mình. Có những giai đoạn chỉ cần một người duy nhất không bỏ cuộc với bạn — và người đó phải là chính bạn.”',
+
+    '“Hãy làm đến mức một ngày nhìn lại, bạn không còn nhận ra con người từng muốn bỏ cuộc nữa.”',
+
+    '“Cuộc đời không thay đổi vào ngày bạn hiểu ra mọi thứ. Nó thay đổi vào ngày bạn quyết định rằng dù chưa hiểu hết, bạn vẫn bắt đầu.”',
+
+    '“Không phải mọi ngày đều tạo ra thành quả. Có những ngày chỉ tạo ra sức chịu đựng. Nhưng chính sức chịu đựng ấy sẽ giữ bạn sống đủ lâu để nhìn thấy thành quả.”',
+
+    '“Đừng đánh giá hành trình bằng cảm giác của ngày hôm nay. Một chương đau đớn không có quyền quyết định cái kết của cả cuốn sách.”',
+
+    '“Khi bạn nghĩ mình đã tới giới hạn, có khi đó chỉ là nơi phiên bản cũ của bạn kết thúc và phiên bản mới bắt đầu.”',
+
+    '“Hãy sống sao cho tương lai của bạn khi ngoảnh đầu lại phải nói: Cảm ơn vì ngày đó mày đã không bỏ cuộc.”'
+  ];
+
+  function fmt(y, m, d) {
+    return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+  }
+  function todayStr() {
+    var n = new Date();
+    return fmt(n.getFullYear(), n.getMonth(), n.getDate());
+  }
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  function saveNotes() {
+    try { localStorage.setItem(NOTES_KEY, JSON.stringify(notes)); } catch (e) {}
+  }
+
+  function applyNotes() {
+    document.querySelectorAll('[data-date]').forEach(function (element) {
+      var note = notes[element.dataset.date];
+      element.classList.toggle('noted', Boolean(note));
+      if (note) element.dataset.note = note;
+      else delete element.dataset.note;
+    });
+  }
+
+  // ===== Import dữ liệu từ file diem-danh-data.js khi người dùng chủ động chọn =====
+  var statusEl = document.getElementById('saveStatus');
+  var importInput = document.getElementById('dataImport');
+
+  statusEl.addEventListener('click', function () {
+    importInput.click();
+  });
+
+  importInput.addEventListener('change', function () {
+    var file = importInput.files && importInput.files[0];
+    if (!file) return;
+
+    file.text().then(function (content) {
+      var marker = content.indexOf('DIEM_DANH_DATA');
+      var start = content.indexOf('{', marker);
+      var end = content.lastIndexOf('}');
+      if (marker < 0 || start < 0 || end <= start) throw new Error('invalid');
+
+      var imported = JSON.parse(content.slice(start, end + 1));
+      if (!imported || typeof imported !== 'object' || Array.isArray(imported)) {
+        throw new Error('invalid');
+      }
+
+      data = {};
+      Object.keys(imported).forEach(function (key) {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(key)) data[key] = Boolean(imported[key]);
+      });
+      save();
+      render();
+      if (!document.getElementById('yearDrawer').hidden) renderYear();
+
+      var total = Object.keys(data).filter(function (key) { return data[key]; }).length;
+      statusEl.classList.add('ok');
+      statusEl.textContent = '✅ Đã import ' + total + ' ngày · Bấm để chọn file khác';
+      showToast('📂 Đã import dữ liệu điểm danh thành công');
+    }).catch(function () {
+      statusEl.classList.remove('ok');
+      statusEl.textContent = '⚠️ File không hợp lệ · Bấm để chọn lại diem-danh-data.js';
+      showToast('⚠️ Không thể đọc dữ liệu điểm danh');
+    }).finally(function () {
+      importInput.value = '';
+    });
+  });
+
+  function currentStreak() {
+    var d = new Date();
+    var streak = 0;
+    // Nếu hôm nay chưa điểm danh thì tính từ hôm qua
+    if (!data[todayStr()]) d.setDate(d.getDate() - 1);
+    while (data[fmt(d.getFullYear(), d.getMonth(), d.getDate())]) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    }
+    return streak;
+  }
+
+  function bestStreak() {
+    var keys = Object.keys(data).filter(function (k) { return data[k]; }).sort();
+    var best = 0, run = 0, prev = null;
+    keys.forEach(function (k) {
+      var parts = k.split('-');
+      var cur = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+      if (prev && (cur - prev) === 86400000) { run++; } else { run = 1; }
+      if (run > best) best = run;
+      prev = cur;
+    });
+    return best;
+  }
+
+  function monthCount(y, m) {
+    var count = 0;
+    var dim = new Date(y, m + 1, 0).getDate();
+    for (var d = 1; d <= dim; d++) if (data[fmt(y, m, d)]) count++;
+    return count;
+  }
+
+  function renderYear() {
+    var monthNames = [
+      'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
+      'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8',
+      'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+    ];
+    var weekNames = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+    var now = new Date();
+    now.setHours(0, 0, 0, 0);
+    var tStr = todayStr();
+    var html = '';
+
+    document.getElementById('yearTitle').textContent = overviewYear;
+
+    for (var month = 0; month < 12; month++) {
+      var firstOffset = (new Date(overviewYear, month, 1).getDay() + 6) % 7;
+      var gridStart = new Date(overviewYear, month, 1 - firstOffset);
+      html += '<section class="year-month">';
+      html += '<button type="button" class="year-month-title" data-month="' + month + '">' + monthNames[month] + '</button>';
+      html += '<div class="year-weekdays">';
+      weekNames.forEach(function (name) { html += '<span>' + name + '</span>'; });
+      html += '</div><div class="year-days">';
+
+      for (var cell = 0; cell < 42; cell++) {
+        var cellDate = new Date(gridStart);
+        cellDate.setDate(gridStart.getDate() + cell);
+        var key = fmt(cellDate.getFullYear(), cellDate.getMonth(), cellDate.getDate());
+        var cls = 'year-day';
+        if (cellDate.getMonth() !== month) cls += ' outside';
+        if (cellDate > now) cls += ' future';
+        if (data[key]) cls += ' checked';
+        if (key === tStr) cls += ' today';
+        html += '<span class="' + cls + '" data-date="' + key + '">' + cellDate.getDate() + '</span>';
+      }
+
+      html += '</div></section>';
+    }
+
+    document.getElementById('yearGrid').innerHTML = html;
+    applyNotes();
+  }
+
+  function openYearDrawer() {
+    var drawer = document.getElementById('yearDrawer');
+    overviewYear = viewYear;
+    renderYear();
+    drawer.hidden = false;
+    document.body.classList.add('year-drawer-open');
+    document.getElementById('yearToggle').setAttribute('aria-expanded', 'true');
+    document.getElementById('yearClose').focus();
+  }
+
+  function closeYearDrawer() {
+    document.getElementById('yearDrawer').hidden = true;
+    document.body.classList.remove('year-drawer-open');
+    document.getElementById('yearToggle').setAttribute('aria-expanded', 'false');
+    document.getElementById('yearToggle').focus();
+  }
+
+  var activeNoteDate = null;
+  var notePopover = document.getElementById('notePopover');
+  var noteInput = document.getElementById('noteInput');
+  var noteTooltip = document.getElementById('noteTooltip');
+
+  function noteDateLabel(key) {
+    var parts = key.split('-');
+    var date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    return new Intl.DateTimeFormat('vi-VN', {
+      weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric'
+    }).format(date);
+  }
+
+  function positionNotePopover(x, y) {
+    var gap = 12;
+    var rect = notePopover.getBoundingClientRect();
+    var left = Math.min(x + gap, window.innerWidth - rect.width - 10);
+    var top = Math.min(y + gap, window.innerHeight - rect.height - 10);
+    notePopover.style.left = Math.max(10, left) + 'px';
+    notePopover.style.top = Math.max(10, top) + 'px';
+  }
+
+  function openNotePopover(key, x, y) {
+    activeNoteDate = key;
+    document.getElementById('noteTitle').textContent = noteDateLabel(key);
+    noteInput.value = notes[key] || '';
+    document.getElementById('noteDelete').hidden = !notes[key];
+    noteTooltip.hidden = true;
+    notePopover.hidden = false;
+    positionNotePopover(x, y);
+    noteInput.focus();
+    noteInput.select();
+  }
+
+  function closeNotePopover() {
+    notePopover.hidden = true;
+    activeNoteDate = null;
+  }
+
+  function commitNote() {
+    if (!activeNoteDate) return;
+    var value = noteInput.value.trim().slice(0, 240);
+    if (value) notes[activeNoteDate] = value;
+    else delete notes[activeNoteDate];
+    saveNotes();
+    applyNotes();
+    closeNotePopover();
+    showToast(value ? '📝 Đã lưu ghi chú cho ngày tương lai' : '↶ Đã xóa ghi chú');
+  }
+
+  function showNoteTooltip(element) {
+    var note = element.dataset.note;
+    if (!note || !notePopover.hidden) return;
+    noteTooltip.textContent = note;
+    noteTooltip.hidden = false;
+    var cellRect = element.getBoundingClientRect();
+    var tipRect = noteTooltip.getBoundingClientRect();
+    var left = cellRect.left + (cellRect.width - tipRect.width) / 2;
+    var top = cellRect.top - tipRect.height - 9;
+    if (top < 8) top = cellRect.bottom + 9;
+    left = Math.max(8, Math.min(left, window.innerWidth - tipRect.width - 8));
+    noteTooltip.style.left = left + 'px';
+    noteTooltip.style.top = top + 'px';
+  }
+
+  function render() {
+    // Số ngày thực tế của tháng (tự xử lý năm nhuận)
+    var daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+    // Thứ của ngày 1 (tuần bắt đầu Thứ 2)
+    var firstDay = (new Date(viewYear, viewMonth, 1).getDay() + 6) % 7;
+
+    document.getElementById('monthTitle').textContent =
+      'Tháng ' + (viewMonth + 1) + ', ' + viewYear;
+
+    var tStr = todayStr();
+    var html = '';
+    for (var i = 0; i < firstDay; i++) html += '<div class="day empty"></div>';
+    for (var d = 1; d <= daysInMonth; d++) {
+      var key = fmt(viewYear, viewMonth, d);
+      var cls = 'day';
+      var cellDate = new Date(viewYear, viewMonth, d);
+      var now = new Date();
+      now.setHours(0, 0, 0, 0);
+      if (data[key]) cls += ' checked';
+      else if (cellDate > now) cls += ' future';
+      else cls += ' missed';
+      if (key === tStr) cls += ' today';
+      html += '<div class="' + cls + '" data-date="' + key + '">' + d + '</div>';
+    }
+    document.getElementById('days').innerHTML = html;
+    applyNotes();
+
+    // Stats
+    document.getElementById('streak').textContent = currentStreak();
+    document.getElementById('best').textContent = bestStreak();
+    var mc = monthCount(viewYear, viewMonth);
+
+    // Progress: % ngày đã điểm danh / số ngày đã trôi qua trong tháng đang xem
+    var nowD = new Date();
+    var elapsed;
+    if (viewYear === nowD.getFullYear() && viewMonth === nowD.getMonth()) {
+      elapsed = nowD.getDate();
+    } else if (new Date(viewYear, viewMonth, 1) < nowD) {
+      elapsed = daysInMonth;
+    } else {
+      elapsed = 0;
+    }
+    var pct = elapsed ? Math.round((mc / elapsed) * 100) : 0;
+    document.getElementById('percent').textContent = pct + '%';
+    document.getElementById('progressFill').style.width = Math.min(pct, 100) + '%';
+
+    // Button state
+    var btn = document.getElementById('checkinBtn');
+    if (data[tStr]) {
+      btn.classList.remove('pulse');
+      btn.classList.add('checked');
+      btn.setAttribute('aria-pressed', 'true');
+      btn.textContent = '↶ Hoàn tác điểm danh hôm nay';
+    } else {
+      btn.classList.remove('checked');
+      btn.classList.add('pulse');
+      btn.setAttribute('aria-pressed', 'false');
+      btn.textContent = '🔥 Bước qua ngọn lửa hôm nay';
+    }
+  }
+
+  // Quote ổn định trong ngày và tự đổi khi bước sang ngày mới.
+  function updateDailyQuote() {
+    var now = new Date();
+    var calendarDay = Math.floor(Date.UTC(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    ) / 86400000);
+    document.getElementById('quote').textContent = QUOTES[calendarDay % QUOTES.length];
+
+    var nextDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    var delayUntilTomorrow = nextDay.getTime() - now.getTime() + 1000;
+    setTimeout(updateDailyQuote, Math.max(delayUntilTomorrow, 1000));
+  }
+  updateDailyQuote();
+
+  // ===== Confetti =====
+  var canvas = document.getElementById('confetti');
+  var ctx = canvas.getContext('2d');
+  var particles = [];
+  function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+  addEventListener('resize', resize); resize();
+
+  function burst() {
+    var colors = ['#6f0b06', '#c52b08', '#ff3d0a', '#ff7a00', '#ffd166', '#f2dfc3'];
+    for (var i = 0; i < 120; i++) {
+      particles.push({
+        x: canvas.width / 2,
+        y: canvas.height / 2,
+        vx: (Math.random() - 0.5) * 16,
+        vy: Math.random() * -14 - 4,
+        size: Math.random() * 8 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.3,
+        life: 1
+      });
+    }
+    if (!animating) { animating = true; requestAnimationFrame(loop); }
+  }
+  var animating = false;
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(function (p) {
+      p.x += p.vx; p.y += p.vy; p.vy += 0.45;
+      p.rot += p.vr; p.life -= 0.008;
+      ctx.save();
+      ctx.globalAlpha = Math.max(p.life, 0);
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+      ctx.restore();
+    });
+    particles = particles.filter(function (p) { return p.life > 0 && p.y < canvas.height + 50; });
+    if (particles.length) requestAnimationFrame(loop);
+    else { animating = false; ctx.clearRect(0, 0, canvas.width, canvas.height); }
+  }
+
+  // ===== Toast milestone =====
+  function showToast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(function () { t.classList.remove('show'); }, 3500);
+  }
+  var MILESTONES = {
+    3: '🔥 3 ải liên tiếp — ngọn lửa đã công nhận bạn!',
+    7: '⚔️ 7 ngày — tuần đầu tiên đã bị chinh phục!',
+    14: '⛓ 14 ngày — xiềng xích đang vỡ vụn!',
+    21: '🛡️ 21 ngày — ý chí đã hóa thành áo giáp!',
+    30: '🏆 30 ngày — bạn đã bước xuyên biển lửa!',
+    50: '👑 50 ngày — kẻ sống sót đã thành huyền thoại!',
+    100: '💀 100 NGÀY — ĐỊA NGỤC KHÔNG THỂ GIỮ CHÂN BẠN!'
+  };
+
+  document.getElementById('checkinBtn').addEventListener('click', function () {
+    var t = todayStr();
+    var n = new Date();
+    viewYear = n.getFullYear();
+    viewMonth = n.getMonth();
+
+    if (data[t]) {
+      data[t] = false;
+      save();
+      render();
+      showToast('↶ Đã hoàn tác điểm danh hôm nay');
+      return;
+    }
+
+    data[t] = true;
+    save();
+    render();
+    burst();
+    var s = currentStreak();
+    if (MILESTONES[s]) showToast(MILESTONES[s]);
+    else showToast('🔥 Đã vượt ải ngày ' + s + ' — không được quay đầu!');
+  });
+
+  document.getElementById('prevBtn').addEventListener('click', function () {
+    viewMonth--;
+    if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+    render();
+  });
+  document.getElementById('nextBtn').addEventListener('click', function () {
+    viewMonth++;
+    if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+    render();
+  });
+
+  document.getElementById('yearToggle').addEventListener('click', openYearDrawer);
+  document.getElementById('yearClose').addEventListener('click', closeYearDrawer);
+  document.getElementById('yearBackdrop').addEventListener('click', closeYearDrawer);
+  document.getElementById('yearPrev').addEventListener('click', function () {
+    overviewYear--;
+    renderYear();
+  });
+  document.getElementById('yearNext').addEventListener('click', function () {
+    overviewYear++;
+    renderYear();
+  });
+  document.getElementById('yearToday').addEventListener('click', function () {
+    overviewYear = new Date().getFullYear();
+    renderYear();
+  });
+  document.getElementById('yearGrid').addEventListener('click', function (event) {
+    var target = event.target.closest('.year-month-title');
+    if (!target) return;
+    viewYear = overviewYear;
+    viewMonth = Number(target.dataset.month);
+    render();
+    closeYearDrawer();
+  });
+  document.addEventListener('contextmenu', function (event) {
+    var day = event.target.closest('.day.future[data-date], .year-day.future[data-date]');
+    if (!day) return;
+    event.preventDefault();
+    openNotePopover(day.dataset.date, event.clientX, event.clientY);
+  });
+  document.addEventListener('mouseover', function (event) {
+    var day = event.target.closest('.noted[data-note]');
+    if (day) showNoteTooltip(day);
+  });
+  document.addEventListener('mouseout', function (event) {
+    var day = event.target.closest('.noted[data-note]');
+    if (day && !day.contains(event.relatedTarget)) noteTooltip.hidden = true;
+  });
+  document.addEventListener('mousedown', function (event) {
+    if (!notePopover.hidden && !notePopover.contains(event.target)) closeNotePopover();
+  });
+  document.getElementById('noteSave').addEventListener('click', commitNote);
+  document.getElementById('noteCancel').addEventListener('click', closeNotePopover);
+  document.getElementById('noteClose').addEventListener('click', closeNotePopover);
+  document.getElementById('noteDelete').addEventListener('click', function () {
+    if (!activeNoteDate) return;
+    delete notes[activeNoteDate];
+    saveNotes();
+    applyNotes();
+    closeNotePopover();
+    showToast('↶ Đã xóa ghi chú');
+  });
+  noteInput.addEventListener('keydown', function (event) {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') commitNote();
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') {
+      if (!notePopover.hidden) closeNotePopover();
+      else if (!document.getElementById('yearDrawer').hidden) closeYearDrawer();
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
